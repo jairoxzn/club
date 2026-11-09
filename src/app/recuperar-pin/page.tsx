@@ -2,13 +2,18 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Crown, ArrowLeft, ChevronLeft, ShieldCheck } from 'lucide-react'
+import { Crown, ArrowLeft, ChevronLeft, ShieldCheck, MessageCircle, Phone, Lock, Sparkles } from 'lucide-react'
 
 export default function RecuperarPinPage() {
   const [phone, setPhone] = useState('')
   const [step, setStep] = useState<'request' | 'sent'>('request')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const whatsappMessage = encodeURIComponent(
+    `Hola Luxuri Private Travel, olvidé mi PIN de acceso al Club VIP. Mi celular registrado es: +51 ${phone.trim() || '...'}. Solicito amablemente que el Administrador restablezca mi PIN de acceso.`
+  )
+  const whatsappUrl = `https://wa.me/51922895355?text=${whatsappMessage}`
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setStep('sent')
   }
@@ -16,22 +21,42 @@ export default function RecuperarPinPage() {
   if (step === 'sent') {
     return (
       <div className="min-h-screen bg-[#070A11] text-slate-100 flex items-center justify-center px-4 relative overflow-hidden">
-        <div className="w-full max-w-md bg-[#0B0F19]/90 border border-amber-500/30 rounded-3xl p-8 text-center shadow-2xl backdrop-blur-md">
-          <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <ShieldCheck className="w-8 h-8" />
+        {/* Glow de fondo */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="w-full max-w-md bg-[#0B0F19]/90 border border-amber-500/30 rounded-3xl p-8 text-center shadow-2xl backdrop-blur-md relative z-10">
+          <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/10">
+            <ShieldCheck className="w-8 h-8 text-amber-400" />
           </div>
-          <h2 className="text-xl font-black text-white mb-2">Solicitud Recibida</h2>
+          <h2 className="text-xl font-black text-white mb-2">Solicitud de Restablecimiento</h2>
           <p className="text-xs text-slate-300 mb-6 leading-relaxed">
-            Hemos registrado tu solicitud de recuperación de PIN para el número{' '}
-            <strong className="text-amber-400">+51 {phone}</strong>. Nuestro equipo de soporte de Luxuri Private Travel validará tu identidad para ayudarte a restablecer tu acceso.
+            Hemos registrado tu solicitud para el celular{' '}
+            <strong className="text-amber-400 font-mono text-sm">+51 {phone}</strong>. Para completar el reseteo por seguridad, comunícate directamente con soporte para que el administrador verifique tu identidad y actualice tu PIN.
           </p>
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-xs text-slate-400 mb-6">
-            <p>También puedes comunicarte directamente al:</p>
-            <p className="text-base font-black text-amber-400 font-mono mt-1">92 28 95 355</p>
+
+          <div className="space-y-3 mb-6">
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl text-xs transition-colors shadow-lg shadow-emerald-600/20"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Contactar al Administrador por WhatsApp
+            </a>
+
+            <a
+              href="tel:+51922895355"
+              className="w-full inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-2.5 px-4 rounded-xl text-xs transition-colors border border-slate-700"
+            >
+              <Phone className="w-4 h-4" />
+              Llamar a Soporte: 92 28 95 355
+            </a>
           </div>
+
           <Link
             href="/ingresar"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 text-slate-950 px-6 py-2.5 rounded-xl font-black text-xs transition-colors shadow-lg shadow-amber-500/20"
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-white font-medium text-xs transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver al inicio de sesión
@@ -43,6 +68,9 @@ export default function RecuperarPinPage() {
 
   return (
     <div className="min-h-screen bg-[#070A11] text-slate-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
+      {/* Glow de fondo */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none" />
+
       <div className="w-full max-w-md relative z-10">
         <Link
           href="/ingresar"
@@ -58,9 +86,9 @@ export default function RecuperarPinPage() {
               <Crown className="w-7 h-7 text-amber-400" />
             </div>
           </div>
-          <h1 className="text-2xl font-black text-white">Recuperar PIN</h1>
+          <h1 className="text-2xl font-black text-white">¿Olvidaste tu PIN?</h1>
           <p className="text-xs text-amber-300/80 font-medium mt-1">
-            Ingresa tu celular registrado para asistirte
+            Soporte oficial y reseteo por el Administrador
           </p>
         </div>
 
@@ -86,20 +114,53 @@ export default function RecuperarPinPage() {
               </div>
             </div>
 
-            <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-300">
-              <p className="font-bold text-amber-400 mb-1">¿Cómo se restablece?</p>
-              <p>
-                Un asesor oficial de Luxuri Private Travel confirmará tu identidad para enviarte un PIN temporal de seguridad.
+            <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-300 space-y-1.5">
+              <div className="flex items-center gap-1.5 text-amber-400 font-bold">
+                <Lock className="w-3.5 h-3.5" />
+                <span>Protocolo de Seguridad VIP</span>
+              </div>
+              <p className="leading-relaxed text-[11px] text-slate-400">
+                Para proteger tus puntos acumulados, la recuperación de acceso es validada directamente por el <strong>Administrador Oficial</strong> de Luxuri Private Travel.
               </p>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black py-3.5 rounded-xl transition-all shadow-lg shadow-amber-500/20 text-sm"
+              className="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black py-3.5 rounded-xl transition-all shadow-lg shadow-amber-500/20 text-sm flex items-center justify-center gap-2"
             >
-              Solicitar Asistencia
+              <Sparkles className="w-4 h-4" />
+              Solicitar Reseteo de PIN
             </button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-800" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-[#0B0F19] px-3 text-slate-500 text-[11px]">O comunícate directamente</span>
+            </div>
+          </div>
+
+          <div className="space-y-2.5">
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl text-xs transition-colors shadow-lg shadow-emerald-600/20"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Enviar mensaje a Soporte por WhatsApp
+            </a>
+
+            <a
+              href="tel:+51922895355"
+              className="w-full inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-amber-400 font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors border border-slate-800"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              Central Telefónica: 92 28 95 355
+            </a>
+          </div>
         </div>
       </div>
     </div>

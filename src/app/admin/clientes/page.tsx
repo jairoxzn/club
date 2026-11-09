@@ -22,6 +22,7 @@ import {
   RefreshCw,
   Eye,
   Crown,
+  KeyRound,
 } from 'lucide-react'
 import { formatCurrency, formatPoints, formatDate, formatPhone } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -36,6 +37,9 @@ export default function AdminClientesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showAdjustModal, setShowAdjustModal] = useState(false)
+  const [showResetPinModal, setShowResetPinModal] = useState(false)
+  const [newPinInput, setNewPinInput] = useState('1234')
+  const [isResettingPin, setIsResettingPin] = useState(false)
   
   // Cliente seleccionado
   const [selectedClient, setSelectedClient] = useState<any>(null)
@@ -142,6 +146,44 @@ export default function AdminClientesPage() {
       fetchClientes()
     } catch {
       toast.error('Error al procesar la solicitud')
+    }
+  }
+
+  // Abrir modal para resetear PIN
+  const handleOpenResetPin = (client: any) => {
+    setSelectedClient(client)
+    setNewPinInput('1234')
+    setShowResetPinModal(true)
+  }
+
+  // Confirmar reseteo de PIN
+  const handleConfirmResetPin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedClient) return
+    if (!/^\d{4,8}$/.test(newPinInput)) {
+      toast.error('El PIN debe contener entre 4 y 8 dígitos numéricos')
+      return
+    }
+
+    setIsResettingPin(true)
+    try {
+      const res = await fetch(`/api/admin/clientes/${selectedClient.id}/reset-pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: newPinInput }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error || 'Error al restablecer PIN')
+        return
+      }
+      toast.success(`PIN de ${selectedClient.firstName} restablecido exitosamente a: ${newPinInput}`)
+      setShowResetPinModal(false)
+      fetchClientes()
+    } catch {
+      toast.error('Error de red al procesar el reseteo de PIN')
+    } finally {
+      setIsResettingPin(false)
     }
   }
 
@@ -366,6 +408,13 @@ export default function AdminClientesPage() {
                           <Coins className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={() => handleOpenResetPin(c)}
+                          className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-[#121827] rounded-lg transition-colors"
+                          title="Resetear PIN de Acceso"
+                        >
+                          <KeyRound className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => handleToggleStatus(c)}
                           className={`p-1.5 rounded-lg transition-colors ${
                             isActive
@@ -545,7 +594,18 @@ export default function AdminClientesPage() {
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end">
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDetailModal(false)
+                  handleOpenResetPin(selectedClient)
+                }}
+                className="px-4 py-2 text-xs font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl transition-colors flex items-center gap-1.5"
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                Resetear PIN
+              </button>
               <button
                 type="button"
                 onClick={() => setShowDetailModal(false)}
@@ -655,6 +715,78 @@ export default function AdminClientesPage() {
                   className="px-5 py-2 text-xs font-black bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl shadow-md shadow-amber-500/20"
                 >
                   {isAdjusting ? 'Aplicando...' : 'Confirmar Ajuste'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 4: Resetear PIN de Cliente */}
+      {showResetPinModal && selectedClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
+          <div className="bg-[#0B0F19] rounded-2xl max-w-md w-full p-6 shadow-2xl border border-amber-500/30 text-white">
+            <div className="flex items-center justify-between pb-4 border-b border-amber-500/10">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <KeyRound className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-sm">Resetear PIN de Cliente</h3>
+                  <p className="text-[11px] text-slate-400">
+                    {selectedClient.firstName} {selectedClient.lastName} ({formatPhone(selectedClient.phone)})
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setShowResetPinModal(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmResetPin} className="py-4 space-y-4">
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-200/90 leading-relaxed">
+                Asigna un nuevo PIN de seguridad para este cliente. Si su cuenta estaba bloqueada por intentos fallidos, será reactivada automáticamente.
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  Nuevo PIN (4 a 8 dígitos)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newPinInput}
+                    onChange={(e) => setNewPinInput(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                    placeholder="1234"
+                    maxLength={8}
+                    required
+                    className="flex-1 px-4 py-2.5 bg-[#121827] border border-slate-700 focus:border-amber-500 rounded-xl text-white font-mono text-center tracking-widest text-lg font-bold focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setNewPinInput('1234')}
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 rounded-xl border border-slate-700 transition-colors"
+                    title="Usar PIN 1234 por defecto"
+                  >
+                    Por defecto (1234)
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowResetPinModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 rounded-xl transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isResettingPin}
+                  className="px-5 py-2 text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 text-slate-950 rounded-xl shadow-md shadow-amber-500/20 disabled:opacity-50 transition-colors"
+                >
+                  {isResettingPin ? 'Restableciendo...' : 'Confirmar Reseteo'}
                 </button>
               </div>
             </form>

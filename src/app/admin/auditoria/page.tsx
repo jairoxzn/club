@@ -4,14 +4,8 @@ import React, { useState, useEffect } from 'react'
 import {
   ShieldAlert,
   Search,
-  Filter,
-  Calendar,
   RefreshCw,
-  User,
-  Activity,
-  FileCode,
   Clock,
-  Crown,
 } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 
