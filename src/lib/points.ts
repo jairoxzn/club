@@ -1,5 +1,31 @@
 import { prisma } from './prisma'
-import { TransactionType, ServiceStatus, RoundingMode, Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
+
+export const TransactionType = {
+  EARNED: 'EARNED',
+  REDEEMED: 'REDEEMED',
+  ADJUSTMENT_POS: 'ADJUSTMENT_POS',
+  ADJUSTMENT_NEG: 'ADJUSTMENT_NEG',
+  RESERVED: 'RESERVED',
+  RELEASED: 'RELEASED',
+  EXPIRED: 'EXPIRED',
+  REVERSAL: 'REVERSAL',
+} as const
+export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
+
+export const ServiceStatus = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+} as const
+export type ServiceStatus = (typeof ServiceStatus)[keyof typeof ServiceStatus]
+
+export const RoundingMode = {
+  FLOOR: 'FLOOR',
+  ROUND: 'ROUND',
+  CEIL: 'CEIL',
+} as const
+export type RoundingMode = (typeof RoundingMode)[keyof typeof RoundingMode]
 
 const Decimal = Prisma.Decimal
 
@@ -77,7 +103,7 @@ export async function awardPointsForService(
   serviceId: string,
   performedById: string
 ): Promise<{ success: boolean; points: number; error?: string }> {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     // Obtener el servicio con lock
     const service = await tx.transportService.findUnique({
       where: { id: serviceId },
@@ -150,7 +176,7 @@ export async function reservePointsForRedemption(
   points: number,
   performedById: string
 ): Promise<{ success: boolean; error?: string }> {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     const customer = await tx.customerProfile.findUnique({
       where: { id: customerId },
     })
@@ -195,7 +221,7 @@ export async function releaseReservedPoints(
   points: number,
   performedById: string
 ): Promise<{ success: boolean; error?: string }> {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     const customer = await tx.customerProfile.findUnique({
       where: { id: customerId },
     })
@@ -237,7 +263,7 @@ export async function confirmRedemption(
   points: number,
   performedById: string
 ): Promise<{ success: boolean; error?: string }> {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     const customer = await tx.customerProfile.findUnique({
       where: { id: customerId },
     })
@@ -280,7 +306,7 @@ export async function adjustPoints(
   description: string,
   performedById: string
 ): Promise<{ success: boolean; error?: string }> {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     const customer = await tx.customerProfile.findUnique({
       where: { id: customerId },
     })

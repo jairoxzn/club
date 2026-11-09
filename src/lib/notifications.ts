@@ -1,5 +1,12 @@
 import { prisma } from './prisma'
-import { NotificationType } from '@prisma/client'
+
+export const NotificationType = {
+  INFO: 'INFO',
+  SUCCESS: 'SUCCESS',
+  WARNING: 'WARNING',
+  ERROR: 'ERROR',
+} as const
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
 
 interface NotificationParams {
   userId: string

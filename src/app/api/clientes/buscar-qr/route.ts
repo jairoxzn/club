@@ -10,7 +10,7 @@ const searchCustomerSchema = z.object({
   phone: z.string().trim().optional(),
 }).refine(
   (data) => data.qrToken || data.customerCode || data.phone,
-  'Debe proporcionar al menos un criterio de bÃºsqueda (qrToken, customerCode o phone)'
+  'Debe proporcionar al menos un criterio de búsqueda (qrToken, customerCode o phone)'
 )
 
 export async function POST(request: Request) {
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     if (!validation.success) {
       return NextResponse.json(
         {
-          error: 'ParÃ¡metros de bÃºsqueda invÃ¡lidos',
+          error: 'Parámetros de búsqueda inválidos',
           details: validation.error.flatten().fieldErrors,
         },
         { status: 400 }
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       warningMessage: isBlocked ? 'Atención: Este cliente se encuentra actualmente bloqueado/inactivo.' : null,
     })
   } catch (error) {
-    console.error('Error al buscar cliente por QR/cÃ³digo:', error)
+    console.error('Error al buscar cliente por QR/código:', error)
     return NextResponse.json({ error: 'Error al buscar cliente' }, { status: 500 })
   }
 }

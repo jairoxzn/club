@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Crown, ArrowLeft, Phone, ChevronLeft, ShieldCheck } from 'lucide-react'
+import { Crown, ArrowLeft, ChevronLeft, ShieldCheck } from 'lucide-react'
 
 export default function RecuperarPinPage() {
   const [phone, setPhone] = useState('')
