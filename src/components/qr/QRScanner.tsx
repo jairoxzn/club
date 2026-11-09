@@ -50,7 +50,11 @@ export default function QRScanner({
       })
 
     return () => {
-      stopScanner()
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        scannerRef.current.stop().catch((err) => {
+          console.warn('Error al detener scanner en desmontaje:', err)
+        })
+      }
     }
   }, [])
 

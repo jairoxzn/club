@@ -24,7 +24,7 @@ export default function PrivacidadPage() {
           <div className="prose prose-blue max-w-none text-gray-600 space-y-6">
             <div>
               <h2 className="text-lg font-semibold text-gray-800">1. Responsable del tratamiento</h2>
-              <p>Luxuri Private Travel es responsable del banco de datos personales denominado "Programa de Fidelización", debidamente registrado ante la ANPD conforme a la Ley N° 29733, Ley de Protección de Datos Personales del Perú.</p>
+              <p>Luxuri Private Travel es responsable del banco de datos personales denominado &quot;Programa de Fidelización&quot;, debidamente registrado ante la ANPD conforme a la Ley N° 29733, Ley de Protección de Datos Personales del Perú.</p>
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-800">2. Datos que recopilamos</h2>
