@@ -1,0 +1,26 @@
+{
+  "name": "Luxuri Private Travel - Club VIP",
+  "short_name": "Luxuri VIP",
+  "description": "Club de fidelización y recompensas exclusivas en transporte y traslados privados",
+  "start_url": "/ingresar",
+  "display": "standalone",
+  "background_color": "#070A11",
+  "theme_color": "#D4AF37",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "transportation", "lifestyle"],
+  "lang": "es-PE"
+}

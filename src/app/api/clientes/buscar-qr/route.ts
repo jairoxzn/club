@@ -72,6 +72,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       customer: {
         id: customer.id,
+        userId: customer.userId,
         firstName: customer.firstName,
         lastName: customer.lastName,
         fullName: `${customer.firstName} ${customer.lastName}`.trim(),
@@ -84,10 +85,16 @@ export async function POST(request: Request) {
         reservedPoints: customer.reservedPoints,
         redeemedPoints: customer.redeemedPoints,
         totalTrips: customer._count.services,
+        user: {
+          id: customer.user.id,
+          isActive: customer.user.isActive,
+          role: customer.user.role,
+        },
+        isActive: customer.user.isActive,
       },
       isBlocked,
       isEligible,
-      warningMessage: isBlocked ? 'AtenciÃ³n: Este cliente se encuentra actualmente bloqueado/inactivo.' : null,
+      warningMessage: isBlocked ? 'Atención: Este cliente se encuentra actualmente bloqueado/inactivo.' : null,
     })
   } catch (error) {
     console.error('Error al buscar cliente por QR/cÃ³digo:', error)

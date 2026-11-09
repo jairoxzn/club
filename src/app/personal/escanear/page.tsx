@@ -109,7 +109,12 @@ export default function EscanearPersonalPage() {
         return
       }
 
-      setCustomer(data.customer)
+      const isBlocked = data.isBlocked ?? (data.customer.user ? !data.customer.user.isActive : false)
+      setCustomer({
+        ...data.customer,
+        isBlocked,
+        user: data.customer.user ?? { isActive: !isBlocked },
+      })
       toast.success(`Cliente identificado: ${data.customer.firstName} ${data.customer.lastName}`)
     } catch {
       toast.error('Error al consultar cliente')
