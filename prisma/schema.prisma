@@ -1,0 +1,369 @@
+// TransportClub - Sistema de Fidelización
+// Prisma Schema v1.0
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// ============================================================
+// USUARIOS Y AUTENTICACIÓN
+// ============================================================
+
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+model User {
+  id                   String    @id @default(uuid())
+  email                String?   @unique
+  username             String?   @unique
+  phone                String?   @unique
+  passwordHash         String?   // Admins y personal
+  pinHash              String?   // Clientes
+  role                 Role      @default(CUSTOMER)
+  isActive             Boolean   @default(true)
+  failedLoginAttempts  Int       @default(0)
+  lockedUntil          DateTime?
+  lastLoginAt          DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relaciones
+  customerProfile      CustomerProfile?
+  servicesRegistered   TransportService[]  @relation("StaffServices")
+  pointsTransactions   PointsTransaction[] @relation("PerformedBy")
+  redemptionsReviewed  RedemptionRequest[] @relation("ReviewedBy")
+  redemptionsValidated RedemptionRequest[] @relation("ValidatedBy")
+  rewardsCreated       Reward[]            @relation("CreatedBy")
+  rulesCreated         PointsRule[]        @relation("RuleCreatedBy")
+  notifications        Notification[]
+  auditLogs            AuditLog[]
+  configsUpdated       SystemConfig[]      @relation("UpdatedBy")
+
+  @@index([phone])
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+// ============================================================
+// PERFIL DE CLIENTE
+// ============================================================
+
+model CustomerProfile {
+  id                    String    @id @default(uuid())
+  userId                String    @unique
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName             String
+  lastName              String
+  phone                 String    @unique
+  email                 String?
+  birthDate             DateTime?
+  customerCode          String    @unique // 8 chars alfanumérico
+  qrToken               String    @unique @default(uuid()) // UUID seguro para QR
+  totalPoints           Int       @default(0) // Acumulados totales
+  availablePoints       Int       @default(0) // Disponibles para canje
+  reservedPoints        Int       @default(0) // Reservados en canjes pendientes
+  redeemedPoints        Int       @default(0) // Total canjeados
+  acceptedTerms         Boolean   @default(false)
+  acceptedDataProcessing Boolean  @default(false)
+  acceptedPromotions    Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relaciones
+  services              TransportService[]
+  pointsTransactions    PointsTransaction[]
+  redemptions           RedemptionRequest[]
+
+  @@index([phone])
+  @@index([customerCode])
+  @@index([qrToken])
+  @@map("customer_profiles")
+}
+
+// ============================================================
+// CATEGORÍAS DE TRANSPORTE
+// ============================================================
+
+model ServiceCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  color       String?  @default("#3B82F6") // Para UI
+  icon        String?  // nombre de icono Lucide
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  services    TransportService[]
+  pointsRules PointsRule[]
+
+  @@map("service_categories")
+}
+
+// ============================================================
+// REGLAS DE ACUMULACIÓN DE PUNTOS
+// ============================================================
+
+enum RoundingMode {
+  FLOOR
+  ROUND
+  CEIL
+}
+
+model PointsRule {
+  id                 String       @id @default(uuid())
+  categoryId         String
+  category           ServiceCategory @relation(fields: [categoryId], references: [id])
+  pointsPerUnit      Decimal      @db.Decimal(10, 4) // Puntos por cada "amountBase"
+  amountBase         Decimal      @db.Decimal(10, 2) // Monto base (ej: 10.00 = S/10)
+  roundingMode       RoundingMode @default(FLOOR)
+  minEligibleAmount  Decimal      @db.Decimal(10, 2) @default(0)
+  maxPointsPerService Int?        // null = sin límite
+  validFrom          DateTime     @default(now())
+  validUntil         DateTime?
+  isActive           Boolean      @default(true)
+  notes              String?
+  createdById        String
+  createdBy          User         @relation("RuleCreatedBy", fields: [createdById], references: [id])
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  // Relaciones
+  services           TransportService[]
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("points_rules")
+}
+
+// ============================================================
+// SERVICIOS DE TRANSPORTE
+// ============================================================
+
+enum ServiceStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+model TransportService {
+  id                  String          @id @default(uuid())
+  customerId          String
+  customer            CustomerProfile @relation(fields: [customerId], references: [id])
+  categoryId          String
+  category            ServiceCategory @relation(fields: [categoryId], references: [id])
+  staffId             String
+  staff               User            @relation("StaffServices", fields: [staffId], references: [id])
+  amount              Decimal         @db.Decimal(10, 2)
+  currency            String          @default("PEN")
+  serviceDate         DateTime        @default(now())
+  referenceNumber     String?
+  notes               String?
+  status              ServiceStatus   @default(COMPLETED)
+  pointsAwarded       Int             @default(0)
+  pointsRuleId        String?
+  pointsRule          PointsRule?     @relation(fields: [pointsRuleId], references: [id])
+  pointsRuleSnapshot  Json?           // Copia de la regla al momento del servicio
+  isPointsProcessed   Boolean         @default(false) // Evitar doble acreditación
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  // Relaciones
+  pointsTransaction   PointsTransaction?
+
+  @@index([customerId])
+  @@index([staffId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([serviceDate])
+  @@map("transport_services")
+}
+
+// ============================================================
+// TRANSACCIONES DE PUNTOS
+// ============================================================
+
+enum TransactionType {
+  EARNED           // Puntos ganados por servicio
+  REDEEMED         // Puntos canjeados (definitivo)
+  ADJUSTMENT_POS   // Ajuste positivo manual
+  ADJUSTMENT_NEG   // Ajuste negativo manual
+  RESERVED         // Puntos reservados en canje pendiente
+  RELEASED         // Puntos liberados al cancelar/rechazar
+  EXPIRED          // Puntos vencidos
+  REVERSAL         // Reversión de operación
+}
+
+model PointsTransaction {
+  id             String          @id @default(uuid())
+  customerId     String
+  customer       CustomerProfile @relation(fields: [customerId], references: [id])
+  type           TransactionType
+  amount         Int             // Positivo o negativo según tipo
+  balanceBefore  Int
+  balanceAfter   Int
+  description    String
+  referenceId    String?         // ID externo opcional
+  serviceId      String?         @unique
+  service        TransportService? @relation(fields: [serviceId], references: [id])
+  redemptionId   String?
+  redemption     RedemptionRequest? @relation(fields: [redemptionId], references: [id])
+  performedById  String
+  performedBy    User            @relation("PerformedBy", fields: [performedById], references: [id])
+  createdAt      DateTime        @default(now())
+
+  @@index([customerId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("points_transactions")
+}
+
+// ============================================================
+// RECOMPENSAS
+// ============================================================
+
+model Reward {
+  id              String    @id @default(uuid())
+  name            String
+  description     String?
+  imageUrl        String?
+  pointsRequired  Int
+  stock           Int?      // null = ilimitado
+  startDate       DateTime?
+  endDate         DateTime?
+  conditions      String?
+  isActive        Boolean   @default(true)
+  isDeleted       Boolean   @default(false) // Soft delete
+  createdById     String
+  createdBy       User      @relation("CreatedBy", fields: [createdById], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relaciones
+  redemptions     RedemptionRequest[]
+
+  @@index([isActive])
+  @@index([isDeleted])
+  @@map("rewards")
+}
+
+// ============================================================
+// SOLICITUDES DE CANJE
+// ============================================================
+
+enum RedemptionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+model RedemptionRequest {
+  id               String           @id @default(uuid())
+  customerId       String
+  customer         CustomerProfile  @relation(fields: [customerId], references: [id])
+  rewardId         String
+  reward           Reward           @relation(fields: [rewardId], references: [id])
+  pointsUsed       Int
+  status           RedemptionStatus @default(PENDING)
+  requestedAt      DateTime         @default(now())
+  reviewedAt       DateTime?
+  reviewedById     String?
+  reviewedBy       User?            @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  rejectionReason  String?
+  validationCode   String?          @unique // Código para entrega física
+  validatedAt      DateTime?
+  validatedById    String?
+  validatedBy      User?            @relation("ValidatedBy", fields: [validatedById], references: [id])
+  notes            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relaciones
+  pointsTransactions PointsTransaction[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([requestedAt])
+  @@map("redemption_requests")
+}
+
+// ============================================================
+// NOTIFICACIONES
+// ============================================================
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+model Notification {
+  id                String           @id @default(uuid())
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title             String
+  message           String
+  type              NotificationType @default(INFO)
+  isRead            Boolean          @default(false)
+  relatedEntityType String?          // "service", "redemption", etc.
+  relatedEntityId   String?
+  createdAt         DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+// ============================================================
+// AUDITORÍA
+// ============================================================
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  action      String   // "CREATE_SERVICE", "APPROVE_REDEMPTION", etc.
+  entityType  String   // "TransportService", "RedemptionRequest", etc.
+  entityId    String?
+  oldValues   Json?
+  newValues   Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================================
+// CONFIGURACIÓN DEL SISTEMA
+// ============================================================
+
+model SystemConfig {
+  id            String   @id @default(uuid())
+  key           String   @unique
+  value         String
+  description   String?
+  updatedById   String
+  updatedBy     User     @relation("UpdatedBy", fields: [updatedById], references: [id])
+  updatedAt     DateTime @updatedAt
+
+  @@map("system_configs")
+}
