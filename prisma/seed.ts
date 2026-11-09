@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Iniciando seed de base de datos...')
+  console.log('🌱 Iniciando seed de base de datos LUXURI PRIVATE TRAVEL...')
 
   // ============================================================
   // USUARIO ADMINISTRADOR
@@ -13,7 +13,9 @@ async function main() {
   
   const admin = await prisma.user.upsert({
     where: { email: 'admin@transportclub.pe' },
-    update: {},
+    update: {
+      username: 'admin',
+    },
     create: {
       email: 'admin@transportclub.pe',
       username: 'admin',
@@ -22,7 +24,7 @@ async function main() {
       isActive: true,
     },
   })
-  console.log('✅ Admin creado:', admin.email)
+  console.log('✅ Admin verificado:', admin.email)
 
   // ============================================================
   // PERSONAL OPERATIVO DEMO
@@ -31,39 +33,41 @@ async function main() {
   
   const staff = await prisma.user.upsert({
     where: { email: 'operador@transportclub.pe' },
-    update: {},
+    update: {
+      username: 'operador',
+    },
     create: {
       email: 'operador@transportclub.pe',
-      username: 'operador1',
+      username: 'operador',
       passwordHash: staffPasswordHash,
       role: Role.STAFF,
       isActive: true,
     },
   })
-  console.log('✅ Operador creado:', staff.email)
+  console.log('✅ Operador verificado:', staff.email)
 
   // ============================================================
-  // CONFIGURACIÓN DEL SISTEMA
+  // CONFIGURACIÓN DEL SISTEMA (LUXURI PRIVATE TRAVEL)
   // ============================================================
   const configs = [
-    { key: 'company_name', value: 'TransportClub', description: 'Nombre de la empresa' },
-    { key: 'loyalty_program_name', value: 'Club de Viajeros', description: 'Nombre del programa de fidelización' },
-    { key: 'company_ruc', value: '20123456789', description: 'RUC de la empresa' },
-    { key: 'company_address', value: 'Av. Principal 123, Lima, Perú', description: 'Dirección de la empresa' },
-    { key: 'company_phone', value: '+51 1 234-5678', description: 'Teléfono de la empresa' },
-    { key: 'company_email', value: 'contacto@transportclub.pe', description: 'Correo de la empresa' },
+    { key: 'company_name', value: 'LUXURI PRIVATE TRAVEL', description: 'Nombre oficial de la empresa' },
+    { key: 'loyalty_program_name', value: 'Club Luxuri VIP', description: 'Nombre del programa de fidelización' },
+    { key: 'company_ruc', value: '20601234567', description: 'RUC de la empresa' },
+    { key: 'company_address', value: 'Aeropuerto Internacional Rodríguez Ballón / Arequipa, Perú', description: 'Dirección o base operativa' },
+    { key: 'company_phone', value: '+51 922 895 355', description: 'Teléfono oficial de contacto / WhatsApp' },
+    { key: 'company_email', value: 'luxurycarstravel@gmail.com', description: 'Correo oficial de la empresa' },
     { key: 'points_expiry_enabled', value: 'false', description: 'Habilitar vencimiento de puntos' },
     { key: 'points_expiry_days', value: '365', description: 'Días para vencimiento de puntos' },
     { key: 'max_failed_logins', value: '5', description: 'Intentos máximos de login fallido' },
     { key: 'lockout_duration_minutes', value: '15', description: 'Minutos de bloqueo por intentos fallidos' },
-    { key: 'primary_color', value: '#1E40AF', description: 'Color primario del sistema' },
-    { key: 'secondary_color', value: '#0EA5E9', description: 'Color secundario del sistema' },
+    { key: 'primary_color', value: '#D4AF37', description: 'Color dorado primario VIP' },
+    { key: 'secondary_color', value: '#F59E0B', description: 'Color secundario oro cálido' },
   ]
 
   for (const config of configs) {
     await prisma.systemConfig.upsert({
       where: { key: config.key },
-      update: { value: config.value },
+      update: { value: config.value, description: config.description },
       create: {
         key: config.key,
         value: config.value,
@@ -72,35 +76,41 @@ async function main() {
       },
     })
   }
-  console.log('✅ Configuraciones del sistema creadas')
+  console.log('✅ Configuraciones de LUXURI PRIVATE TRAVEL actualizadas')
 
   // ============================================================
-  // CATEGORÍAS DE TRANSPORTE
+  // CATEGORÍAS DE TRANSPORTE SEGÚN EL FLYER OFICIAL
   // ============================================================
   const categories = [
     {
-      name: 'Transporte Urbano',
-      description: 'Servicio de transporte dentro de la ciudad',
-      color: '#3B82F6',
-      icon: 'Bus',
+      name: 'Traslado de Aeropuerto',
+      description: 'Traslados exclusivos del aeropuerto a tu destino y viceversa en autos y camionetas modernas',
+      color: '#D4AF37',
+      icon: 'Plane',
     },
     {
-      name: 'Transporte Interprovincial',
-      description: 'Servicio de transporte entre provincias o ciudades',
-      color: '#8B5CF6',
-      icon: 'TruckIcon',
-    },
-    {
-      name: 'Transporte Empresarial',
-      description: 'Servicio de transporte para empresas y grupos',
-      color: '#10B981',
-      icon: 'Building2',
-    },
-    {
-      name: 'Transporte Corporativo',
-      description: 'Servicio premium para clientes corporativos',
+      name: 'Viajes Privados & Interprovincial',
+      description: 'Viajes a Moquegua, Tacna, Mollendo, Cocachacra, Valle del Tambo, Juliaca - Puno',
       color: '#F59E0B',
-      icon: 'Crown',
+      icon: 'Car',
+    },
+    {
+      name: 'Destinos & Tours Turísticos',
+      description: 'City tours, Campiña tour, Ruta del sillar, Chapi, Cañón del Colca',
+      color: '#10B981',
+      icon: 'Compass',
+    },
+    {
+      name: 'Mensajería & Encomiendas',
+      description: 'Envíos locales y nacionales de documentos y paquetes con entregas rápidas y seguras',
+      color: '#6366F1',
+      icon: 'Package',
+    },
+    {
+      name: 'Servicio Empresarial & Corporativo',
+      description: 'Trámites, gestiones, traslados para grupos, eventos y viajes ejecutivos personalizados',
+      color: '#EC4899',
+      icon: 'Briefcase',
     },
   ]
 
@@ -113,44 +123,52 @@ async function main() {
       create: { ...cat, isActive: true },
     })
     createdCategories[cat.name] = category.id
-    console.log('✅ Categoría creada:', cat.name)
+    console.log('✅ Categoría registrada:', cat.name)
   }
 
   // ============================================================
-  // REGLAS DE PUNTOS (VALORES DEMO - CONFIGURABLES)
+  // REGLAS DE PUNTOS
   // ============================================================
   const rulesData = [
     {
-      categoryName: 'Transporte Urbano',
-      pointsPerUnit: 1,
-      amountBase: 10,
-      minEligibleAmount: 5,
-      maxPointsPerService: 100,
-      notes: 'DEMO: 1 punto por cada S/10. Configurable desde el panel.',
-    },
-    {
-      categoryName: 'Transporte Interprovincial',
+      categoryName: 'Traslado de Aeropuerto',
       pointsPerUnit: 2,
       amountBase: 10,
       minEligibleAmount: 20,
-      maxPointsPerService: 500,
-      notes: 'DEMO: 2 puntos por cada S/10. Configurable desde el panel.',
+      maxPointsPerService: 200,
+      notes: '2 puntos VIP por cada S/10 en traslados de aeropuerto.',
     },
     {
-      categoryName: 'Transporte Empresarial',
+      categoryName: 'Viajes Privados & Interprovincial',
       pointsPerUnit: 3,
       amountBase: 10,
       minEligibleAmount: 50,
       maxPointsPerService: 1000,
-      notes: 'DEMO: 3 puntos por cada S/10. Configurable desde el panel.',
+      notes: '3 puntos VIP por cada S/10 en viajes interprovinciales (Tacna, Moquegua, Puno, etc.).',
     },
     {
-      categoryName: 'Transporte Corporativo',
+      categoryName: 'Destinos & Tours Turísticos',
+      pointsPerUnit: 4,
+      amountBase: 10,
+      minEligibleAmount: 50,
+      maxPointsPerService: 1500,
+      notes: '4 puntos VIP por cada S/10 en tours (Colca, Ruta del Sillar, Campiña, etc.).',
+    },
+    {
+      categoryName: 'Mensajería & Encomiendas',
+      pointsPerUnit: 1,
+      amountBase: 10,
+      minEligibleAmount: 10,
+      maxPointsPerService: 100,
+      notes: '1 punto VIP por cada S/10 en mensajería y paquetes.',
+    },
+    {
+      categoryName: 'Servicio Empresarial & Corporativo',
       pointsPerUnit: 5,
       amountBase: 10,
       minEligibleAmount: 100,
-      maxPointsPerService: 2000,
-      notes: 'DEMO: 5 puntos por cada S/10. Configurable desde el panel.',
+      maxPointsPerService: 2500,
+      notes: '5 puntos VIP por cada S/10 en servicios ejecutivos corporativos.',
     },
   ]
 
@@ -158,7 +176,6 @@ async function main() {
     const categoryId = createdCategories[rule.categoryName]
     if (!categoryId) continue
 
-    // Solo crear si no existe regla activa para esta categoría
     const existingRule = await prisma.pointsRule.findFirst({
       where: { categoryId, isActive: true },
     })
@@ -177,52 +194,52 @@ async function main() {
           createdById: admin.id,
         },
       })
-      console.log('✅ Regla creada para:', rule.categoryName)
+      console.log('✅ Regla de acumulación activada para:', rule.categoryName)
     }
   }
 
   // ============================================================
-  // RECOMPENSAS DEMO
+  // RECOMPENSAS EXCLUSIVAS LUXURI VIP
   // ============================================================
   const rewards = [
     {
-      name: 'Descuento 10% en próximo servicio',
-      description: 'Obtén un descuento del 10% en tu próximo servicio de transporte urbano.',
+      name: 'Traslado al Aeropuerto con 20% de Descuento',
+      description: 'Obtén 20% de descuento en tu próximo traslado privado hacia o desde el aeropuerto.',
+      pointsRequired: 150,
+      stock: 100,
+      conditions: 'Válido para servicio de traslado privado en auto o camioneta. Reserva con 24h de anticipación.',
+      isActive: true,
+    },
+    {
+      name: 'Envío de Mensajería Local Gratis',
+      description: 'Un envío de documentos o encomienda ligera dentro de la ciudad sin costo.',
       pointsRequired: 100,
-      stock: null,
-      conditions: 'Válido para servicios de transporte urbano. No acumulable con otras ofertas.',
-      isActive: true,
-    },
-    {
-      name: 'Viaje interprovincial con descuento',
-      description: 'S/20 de descuento en tu próximo viaje interprovincial.',
-      pointsRequired: 300,
       stock: 50,
-      conditions: 'Válido para rutas seleccionadas. Sujeto a disponibilidad.',
+      conditions: 'Paquete de hasta 3 kg dentro de la zona urbana.',
       isActive: true,
     },
     {
-      name: 'Servicio empresarial gratuito',
-      description: 'Un servicio de transporte empresarial sin costo (hasta S/80 de valor).',
+      name: 'Tour Campiña o Ruta del Sillar con 50% de Descuento',
+      description: 'Disfruta de medio día conociendo los mejores atractivos turísticos con tarifa especial.',
+      pointsRequired: 400,
+      stock: 30,
+      conditions: 'Válido para un pasajero. Sujeto a programación de salidas.',
+      isActive: true,
+    },
+    {
+      name: 'Traslado Aeropuerto 100% Gratis',
+      description: 'Un traslado exclusivo completo sin costo entre el aeropuerto y cualquier punto urbano.',
+      pointsRequired: 600,
+      stock: 25,
+      conditions: 'Vehículo premium con chofer profesional y recepción con cartel personalizada.',
+      isActive: true,
+    },
+    {
+      name: 'Viaje Interprovincial VIP con S/50 de Descuento',
+      description: 'Bono de S/50 de descuento directo en traslados a Moquegua, Tacna, Mollendo o Puno.',
       pointsRequired: 800,
       stock: 20,
-      conditions: 'Válido para grupos de hasta 10 personas. Con reserva previa.',
-      isActive: true,
-    },
-    {
-      name: 'Beneficio corporativo premium',
-      description: 'Acceso a nuestro servicio corporativo con descuento del 25% por un mes.',
-      pointsRequired: 1500,
-      stock: 10,
-      conditions: 'Para clientes con cuenta activa mínimo 6 meses. Un beneficio por cliente.',
-      isActive: true,
-    },
-    {
-      name: 'Kit de viajero frecuente',
-      description: 'Mochila de viaje, almohada cervical y artículos de regalo de la marca.',
-      pointsRequired: 500,
-      stock: 30,
-      conditions: 'Stock limitado. Recojo en oficinas de la empresa.',
+      conditions: 'Aplica a traslados privados contratados en camioneta o auto exclusivo.',
       isActive: true,
     },
   ]
@@ -235,7 +252,7 @@ async function main() {
       await prisma.reward.create({
         data: { ...reward, createdById: admin.id },
       })
-      console.log('✅ Recompensa creada:', reward.name)
+      console.log('✅ Recompensa VIP creada:', reward.name)
     }
   }
 
@@ -263,28 +280,28 @@ async function main() {
     await prisma.customerProfile.create({
       data: {
         userId: clientUser.id,
-        firstName: 'Juan',
-        lastName: 'Pérez Demo',
+        firstName: 'Carlos',
+        lastName: 'Mendoza VIP',
         phone: '999000001',
-        email: 'juan.demo@email.com',
-        customerCode: 'DEMO0001',
-        totalPoints: 350,
-        availablePoints: 350,
+        email: 'carlos.vip@luxuri.pe',
+        customerCode: 'LUX-0001',
+        totalPoints: 450,
+        availablePoints: 450,
         reservedPoints: 0,
         redeemedPoints: 0,
         acceptedTerms: true,
         acceptedDataProcessing: true,
-        acceptedPromotions: false,
+        acceptedPromotions: true,
       },
     })
-    console.log('✅ Cliente demo creado: celular 999000001, PIN 1234')
+    console.log('✅ Cliente VIP demo creado: 999000001 / PIN 1234 (450 puntos)')
   }
 
-  console.log('\n🎉 Seed completado exitosamente!')
-  console.log('\n📋 Credenciales de acceso:')
-  console.log('   Admin:    admin@transportclub.pe / Admin@2024!')
-  console.log('   Operador: operador@transportclub.pe / Staff@2024!')
-  console.log('   Cliente:  celular 999000001 / PIN 1234')
+  console.log('\n🎉 ¡Seed de LUXURI PRIVATE TRAVEL completado exitosamente!')
+  console.log('🔐 Portal Único de Acceso: /ingresar')
+  console.log('   👑 Cliente VIP:  999000001 / PIN 1234')
+  console.log('   💼 Operador:     operador@transportclub.pe (o operador) / Staff@2024!')
+  console.log('   🛡️ Administrador: admin@transportclub.pe (o admin) / Admin@2024!')
 }
 
 main()
