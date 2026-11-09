@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Crown, Eye, EyeOff, Loader2, CheckCircle2, ChevronLeft, Sparkles, ShieldCheck } from 'lucide-react'
+import { Crown, Eye, EyeOff, Loader2, ChevronLeft, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 const registroSchema = z

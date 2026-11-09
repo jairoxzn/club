@@ -2,12 +2,11 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import crypto from 'crypto'
-import { Role, NotificationType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { hashPin, generateCustomerCode } from '@/lib/auth'
-import { getSession } from '@/lib/session'
+import { getSession, Role } from '@/lib/session'
 import { createAuditLog } from '@/lib/audit'
-import { createNotification } from '@/lib/notifications'
+import { createNotification, NotificationType } from '@/lib/notifications'
 
 const registerSchema = z.object({
   firstName: z.string().trim().min(1, 'El nombre es obligatorio'),
@@ -120,7 +119,7 @@ export async function POST(request: Request) {
     const qrToken = crypto.randomUUID()
 
     // Crear User y CustomerProfile en una transacciÃ³n
-    const user = await prisma.$transaction(async (tx) => {
+    const user = await prisma.$transaction(async (tx: any) => {
       return tx.user.create({
         data: {
           phone,

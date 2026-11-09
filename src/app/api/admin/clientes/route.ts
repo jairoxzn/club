@@ -1,9 +1,8 @@
 ﻿export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { Role } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { requireAuth } from '@/lib/session'
+import { requireAuth, Role } from '@/lib/session'
 import { hashPin, generateCustomerCode } from '@/lib/auth'
 import { createAuditLog } from '@/lib/audit'
 import { randomUUID } from 'crypto'
@@ -153,7 +152,7 @@ export async function POST(request: Request) {
 
     const qrToken = randomUUID()
 
-    const newCustomer = await prisma.$transaction(async (tx) => {
+    const newCustomer = await prisma.$transaction(async (tx: any) => {
       const user = await tx.user.create({
         data: {
           phone,

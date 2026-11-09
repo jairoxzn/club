@@ -145,7 +145,7 @@ export async function PUT(request: Request, context: RouteContext) {
       }
     }
 
-    const updatedProfile = await prisma.$transaction(async (tx) => {
+    const updatedProfile = await prisma.$transaction(async (tx: any) => {
       // Actualizar User
       const userUpdateData: any = {}
       if (data.phone !== undefined) userUpdateData.phone = data.phone

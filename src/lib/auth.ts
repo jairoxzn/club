@@ -40,8 +40,8 @@ export function generateValidationCode(): string {
 
 export async function checkRateLimit(
   userId: string,
-  maxAttempts: number = 5,
-  lockoutMinutes: number = 15
+  _maxAttempts: number = 5,
+  _lockoutMinutes: number = 15
 ): Promise<{ isLocked: boolean; lockedUntil?: Date }> {
   const user = await prisma.user.findUnique({
     where: { id: userId },

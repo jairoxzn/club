@@ -1,12 +1,20 @@
 ﻿export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { Role, RedemptionStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { requireAuth } from '@/lib/session'
+import { requireAuth, Role } from '@/lib/session'
 import { confirmRedemption } from '@/lib/points'
 import { createAuditLog } from '@/lib/audit'
 import { createNotification } from '@/lib/notifications'
+
+export const RedemptionStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+} as const
+export type RedemptionStatus = (typeof RedemptionStatus)[keyof typeof RedemptionStatus]
 
 const validateDeliverySchema = z.object({
   validationCode: z.string().trim().min(4, 'El cÃ³digo de validaciÃ³n es obligatorio'),
@@ -88,7 +96,7 @@ export async function POST(request: Request) {
     const now = new Date()
 
     // Actualizar canje y stock si aplica
-    const updatedRedemption = await prisma.$transaction(async (tx) => {
+    const updatedRedemption = await prisma.$transaction(async (tx: any) => {
       // Si la recompensa tiene control de stock, decrementar
       if (redemption.reward.stock !== null && redemption.reward.stock > 0) {
         await tx.reward.update({
