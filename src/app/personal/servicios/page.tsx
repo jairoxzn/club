@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Bus,
   Search,
@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   FileSpreadsheet,
   RefreshCw,
-  Crown,
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
@@ -20,7 +19,7 @@ export default function ServiciosPersonalPage() {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
 
-  const fetchServices = () => {
+  const fetchServices = useCallback(() => {
     setIsLoading(true)
     let url = '/api/servicios'
     const params = new URLSearchParams()
@@ -36,7 +35,7 @@ export default function ServiciosPersonalPage() {
       })
       .catch((err) => console.error(err))
       .finally(() => setIsLoading(false))
-  }
+  }, [selectedCategory])
 
   useEffect(() => {
     fetch('/api/admin/categorias')
@@ -44,8 +43,12 @@ export default function ServiciosPersonalPage() {
       .then((data) => {
         if (data && data.categories) setCategories(data.categories)
       })
+      .catch((err) => console.error(err))
+  }, [])
+
+  useEffect(() => {
     fetchServices()
-  }, [selectedCategory])
+  }, [fetchServices])
 
   const filteredServices = services.filter((s) => {
     if (!searchTerm) return true

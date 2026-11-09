@@ -1,5 +1,4 @@
 import { prisma } from './prisma'
-import { Prisma } from '@prisma/client'
 
 export const TransactionType = {
   EARNED: 'EARNED',
@@ -26,8 +25,6 @@ export const RoundingMode = {
   CEIL: 'CEIL',
 } as const
 export type RoundingMode = (typeof RoundingMode)[keyof typeof RoundingMode]
-
-const Decimal = Prisma.Decimal
 
 export interface PointsCalculation {
   points: number
@@ -57,27 +54,27 @@ export async function calculatePoints(
 
   if (!rule) return null
 
-  const amountDecimal = new Decimal(amount)
-  const minEligible = new Decimal(rule.minEligibleAmount.toString())
+  const amountNum = Number(amount)
+  const minEligible = Number(rule.minEligibleAmount)
 
-  if (amountDecimal.lessThan(minEligible)) return null
+  if (amountNum < minEligible) return null
 
-  const amountBase = new Decimal(rule.amountBase.toString())
-  const pointsPerUnit = new Decimal(rule.pointsPerUnit.toString())
+  const amountBase = Number(rule.amountBase)
+  const pointsPerUnit = Number(rule.pointsPerUnit)
   
-  const units = amountDecimal.div(amountBase)
+  const units = amountNum / amountBase
   let points: number
 
   switch (rule.roundingMode) {
     case RoundingMode.CEIL:
-      points = units.ceil().mul(pointsPerUnit).ceil().toNumber()
+      points = Math.ceil(Math.ceil(units) * pointsPerUnit)
       break
     case RoundingMode.ROUND:
-      points = units.round().mul(pointsPerUnit).round().toNumber()
+      points = Math.round(Math.round(units) * pointsPerUnit)
       break
     case RoundingMode.FLOOR:
     default:
-      points = units.floor().mul(pointsPerUnit).floor().toNumber()
+      points = Math.floor(Math.floor(units) * pointsPerUnit)
       break
   }
 

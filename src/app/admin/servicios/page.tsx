@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Bus,
   Search,
@@ -14,7 +14,6 @@ import {
   User,
   ArrowRight,
   TrendingUp,
-  Crown,
 } from 'lucide-react'
 import { formatCurrency, formatPoints, formatDate } from '@/lib/utils'
 import Link from 'next/link'
@@ -28,7 +27,7 @@ export default function AdminServiciosPage() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
 
-  const fetchServices = () => {
+  const fetchServices = useCallback(() => {
     setIsLoading(true)
     let url = '/api/servicios'
     const params = new URLSearchParams()
@@ -46,7 +45,7 @@ export default function AdminServiciosPage() {
       })
       .catch((err) => console.error(err))
       .finally(() => setIsLoading(false))
-  }
+  }, [selectedCategory, startDate, endDate])
 
   useEffect(() => {
     fetch('/api/admin/categorias')
@@ -54,8 +53,12 @@ export default function AdminServiciosPage() {
       .then((data) => {
         if (data && data.categories) setCategories(data.categories)
       })
+      .catch((err) => console.error(err))
+  }, [])
+
+  useEffect(() => {
     fetchServices()
-  }, [selectedCategory, startDate, endDate])
+  }, [fetchServices])
 
   const filteredServices = services.filter((s) => {
     if (!searchTerm) return true
