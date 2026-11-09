@@ -64,3 +64,4 @@ async function testBuscarQr() {
 testBuscarQr()
   .catch(console.error)
   .finally(() => prisma.$disconnect())
+

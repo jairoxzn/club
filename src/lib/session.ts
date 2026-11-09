@@ -1,6 +1,13 @@
 import { getIronSession, SessionOptions } from 'iron-session'
 import { cookies } from 'next/headers'
-import { Role } from '@prisma/client'
+
+export type Role = 'CUSTOMER' | 'STAFF' | 'ADMIN'
+
+export const Role = {
+  CUSTOMER: 'CUSTOMER',
+  STAFF: 'STAFF',
+  ADMIN: 'ADMIN',
+} as const
 
 export interface SessionData {
   userId: string

@@ -129,7 +129,7 @@ export async function awardPointsForService(
         balanceAfter,
         description: `Puntos ganados por servicio de transporte`,
         serviceId,
-        performedById,
+        performedById: performedById || service.staffId || customer.userId,
       },
     })
 

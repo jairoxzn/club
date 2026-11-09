@@ -1,9 +1,8 @@
-﻿export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { Role } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { requireAuth } from '@/lib/session'
+import { requireAuth, Role } from '@/lib/session'
 
 const searchCustomerSchema = z.object({
   qrToken: z.string().trim().optional(),
